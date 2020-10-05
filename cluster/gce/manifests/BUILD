@@ -16,6 +16,7 @@ filegroup(
         "abac-authz-policy.jsonl",
         "cluster-autoscaler.manifest",
         "etcd.manifest",
+        "ignite-etcd.manifest",
         "glbc.manifest",
         "konnectivity-server.yaml",
         "kube-addon-manager.yaml",
