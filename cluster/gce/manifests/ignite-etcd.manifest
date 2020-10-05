@@ -39,11 +39,6 @@
             "name": "clientport",
             "containerPort": {{ port }},
             "hostPort": {{ port }}
-          },
-          {
-            "name": "igniteclientport",
-            "containerPort": 10800,
-            "hostPort": 10800
           }
         ]
       }
