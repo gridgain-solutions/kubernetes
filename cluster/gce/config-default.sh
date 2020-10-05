@@ -390,6 +390,9 @@ KUBE_UP_AUTOMATIC_CLEANUP=${KUBE_UP_AUTOMATIC_CLEANUP:-false}
 # Storage backend. 'etcd2' supported, 'etcd3' experimental.
 STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
+# Whether ignite should be used as etcd3-compatible storage backend
+IGNITE_STORAGE_BACKEND=${IGNITE_STORAGE_BACKEND:-}
+
 # Networking plugin specific settings.
 NETWORK_PROVIDER="${NETWORK_PROVIDER:-kubenet}" # none, kubenet
 
