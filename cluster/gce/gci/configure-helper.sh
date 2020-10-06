@@ -521,7 +521,7 @@ function mount-master-pd {
 
   if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
     mkdir -m 700 -p "${mount_point}/var/ignite-storage"
-    ln -s -f "${mount_point}/var/etcd" /var/ignite-storage
+    ln -s -f "${mount_point}/var/ignite-storage" /var/ignite-storage
     chown -R 10000 "${mount_point}/var/ignite-storage"
     chgrp -R 10000 "${mount_point}/var/ignite-storage"
   fi
