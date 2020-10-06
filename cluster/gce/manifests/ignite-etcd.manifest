@@ -2,7 +2,7 @@
   "apiVersion": "v1",
   "kind": "Pod",
   "metadata": {
-    "name":"ignite-etcd-server",
+    "name":"etcd-server",
     "namespace": "kube-system",
     "annotations": {
       "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
@@ -26,12 +26,12 @@
           "--server-port", 
           "{{ port }}",
           "--ignite-config",
-          "/opt/ignite-etcd/config/ignite-server-dev-local.xml"
+          "/etc/srv/kubernetes/ignite-etcd.xml"
         ],
         "env": [
           {
             "name": "IGNITE_ETCD_OPTS",
-            "value": "-Djava.util.logging.config.file=/opt/ignite-etcd/config/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true"
+            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true"
           }
         ],
         "ports": [
@@ -40,7 +40,47 @@
             "containerPort": {{ port }},
             "hostPort": {{ port }}
           }
+        ],
+        "volumeMounts": [
+          {
+            "name": "varstorage",
+            "mountPath": "/var/ignite-storage",
+            "readOnly": false
+          },
+          { 
+            "name": "varwork",
+            "mountPath": "/var/ignite-work",
+            "readOnly": false
+          },
+          {
+            "name": "etc",
+            "mountPath": "/etc/srv/kubernetes",
+            "readOnly": false
+          }
         ]
+      }
+    ],
+    "volumes": [
+      {
+        "name": "varstorage",
+        "hostPath": {
+          "path": "/mnt/master-pd/var/ignite-storage",
+          "type": "DirectoryOrCreate"
+        }
+      },
+      {
+        "name": "varwork",
+        "hostPath": {
+          "path": "/var/ignite-work",
+          "type": "DirectoryOrCreate"
+        }
+      },
+      { 
+        "name": "etc",
+        "hostPath": {
+          "path": "/etc/srv/kubernetes",
+          "type": "Directory"
+        }
       }
     ]
   }

@@ -16,7 +16,6 @@ filegroup(
         "abac-authz-policy.jsonl",
         "cluster-autoscaler.manifest",
         "etcd.manifest",
-        "ignite-etcd.manifest",
         "glbc.manifest",
         "konnectivity-server.yaml",
         "kube-addon-manager.yaml",
@@ -24,6 +23,9 @@ filegroup(
         "kube-controller-manager.manifest",
         "kube-proxy.manifest",
         "kube-scheduler.manifest",
+        "ignite-etcd.manifest",
+        "ignite-etcd.xml",
+        "java.util.logging.properties",
     ] + glob(["internal-*"]),
 )
 
