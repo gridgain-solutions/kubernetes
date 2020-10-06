@@ -427,7 +427,6 @@ function kube::release::package_kube_manifests_tarball() {
   cp "${src_dir}/kube-proxy.manifest" "${dst_dir}/"
   cp "${src_dir}/cluster-autoscaler.manifest" "${dst_dir}/"
   cp "${src_dir}/etcd.manifest" "${dst_dir}"
-  cp "${src_dir}/ignite-etcd.manifest" "${dst_dir}"
   cp "${src_dir}/kube-scheduler.manifest" "${dst_dir}"
   cp "${src_dir}/kube-apiserver.manifest" "${dst_dir}"
   cp "${src_dir}/konnectivity-server.yaml" "${dst_dir}"
@@ -446,6 +445,10 @@ function kube::release::package_kube_manifests_tarball() {
   for d in cluster/addons cluster/gce/addons; do
     find "${KUBE_ROOT}/${d}" \( \( -name \*.yaml -o -name \*.yaml.in -o -name \*.json \) -a ! \( -name \*demo\* \) \) -print0 | "${TAR}" c --transform "s|${KUBE_ROOT#/*}/${d}||" --null -T - | "${TAR}" x -C "${dst_dir}"
   done
+
+  cp "${src_dir}/ignite-etcd.manifest" "${dst_dir}"
+  cp "${src_dir}/ignite-etcd.xml" "${dst_dir}"
+  cp "${src_dir}/java.util.logging.properties" "${dst_dir}"
 
   kube::release::clean_cruft
 

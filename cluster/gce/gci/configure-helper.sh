@@ -518,6 +518,13 @@ function mount-master-pd {
 
   chown -R etcd "${mount_point}/var/etcd"
   chgrp -R etcd "${mount_point}/var/etcd"
+
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+    mkdir -m 700 -p "${mount_point}/var/ignite-storage"
+    ln -s -f "${mount_point}/var/etcd" /var/ignite-storage
+    chown -R 10000 "${mount_point}/var/ignite-storage"
+    chgrp -R 10000 "${mount_point}/var/ignite-storage"
+  fi
 }
 
 # append_or_replace_prefixed_line ensures:
@@ -1709,6 +1716,9 @@ function prepare-ignite-etcd-manifest {
   sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
 
   mv "${temp_file}" /etc/kubernetes/manifests
+
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" /etc/srv/kubernetes
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
 }
 
 # Starts etcd server pod (and etcd-events pod if needed).
