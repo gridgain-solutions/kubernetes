@@ -12,7 +12,7 @@
                         <property name="persistenceEnabled" value="false"/>
                     </bean>
                 </property>
-                <property name="storagePath" value="/var/ignite-storage"/>
+                <property name="storagePath" value="/var/etcd/ignite-storage"/>
             </bean>
         </property>
 
