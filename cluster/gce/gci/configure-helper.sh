@@ -518,13 +518,6 @@ function mount-master-pd {
 
   chown -R etcd "${mount_point}/var/etcd"
   chgrp -R etcd "${mount_point}/var/etcd"
-
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
-    mkdir -m 700 -p "${mount_point}/var/ignite-storage"
-    ln -s -f "${mount_point}/var/ignite-storage" /var/ignite-storage
-    chown -R 10000 "${mount_point}/var/ignite-storage"
-    chgrp -R 10000 "${mount_point}/var/ignite-storage"
-  fi
 }
 
 # append_or_replace_prefixed_line ensures:
@@ -1714,6 +1707,9 @@ function prepare-ignite-etcd-manifest {
 
   sed -i -e "s@{{ *port *}}@$1@g" "${temp_file}"
   sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
+
+  # Replace the volume host path.
+  sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
 
   mv "${temp_file}" /etc/kubernetes/manifests
 
