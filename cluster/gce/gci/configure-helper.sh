@@ -1735,15 +1735,6 @@ function start-etcd-servers {
     rm -f /etc/init.d/etcd
   fi
 
-  if [[ "${KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE:-grpc}" == 'grpc' ]]; then
-    params+=("--mode=grpc")
-  elif [[ "${KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE:-grpc}" == 'http-connect' ]]; then
-    params+=("--mode=http-connect")
-  else
-    echo "KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE must be set to either grpc or http-connect"
-    exit 1
-  fi
-
   if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
     prepare-ignite-etcd-manifest "2379" "200m"
   else
