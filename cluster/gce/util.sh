@@ -3408,9 +3408,11 @@ function kube-down() {
 
   set-existing-master
 
-  # Un-register the master replica from etcd and events etcd.
-  remove-replica-from-etcd 2379 true
-  remove-replica-from-etcd 4002 false
+  if [[ -n "${IGNITE_STORAGE_BACKEND:-}" ]]; then
+    # Un-register the master replica from etcd and events etcd.
+    remove-replica-from-etcd 2379 true
+    remove-replica-from-etcd 4002 false
+  fi
 
   # Delete the master replica (if it exists).
   if gcloud compute instances describe "${REPLICA_NAME}" --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
