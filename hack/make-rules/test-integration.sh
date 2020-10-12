@@ -61,9 +61,15 @@ cleanup() {
 }
 
 runTests() {
-  kube::log::status "Starting etcd instance"
-  CLEANUP_REQUIRED=1
-  kube::etcd::start
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+    # TODO: else start ignite-etcd
+    kube::log::status "Run ignite-etcd manually"
+  else
+    kube::log::status "Starting etcd instance"
+    CLEANUP_REQUIRED=1
+    kube::etcd::start
+  fi
+
   kube::log::status "Running integration test cases"
 
   # export KUBE_RACE
@@ -77,11 +83,20 @@ runTests() {
       KUBE_RACE="" \
       KUBE_TIMEOUT="${KUBE_TIMEOUT}"
 
-  cleanup
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+    # TODO: else cleanup ignite-etcd
+    kube::log::status "Clean ignite-etcd manually"
+  else
+    cleanup
+  fi
 }
 
 checkEtcdOnPath() {
   kube::log::status "Checking etcd is on PATH"
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+    # TODO: else check ignite-etcd
+    return
+  fi
   which etcd && return
   kube::log::status "Cannot find etcd, cannot run integration tests."
   kube::log::status "Please see https://git.k8s.io/community/contributors/devel/sig-testing/integration-tests.md#install-etcd-dependency for instructions."
