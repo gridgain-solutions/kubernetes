@@ -1321,6 +1321,7 @@ KUBECFG_KEY: $(yaml-quote ${KUBECFG_KEY_BASE64:-})
 KUBELET_APISERVER: $(yaml-quote ${KUBELET_APISERVER:-})
 NUM_NODES: $(yaml-quote ${NUM_NODES})
 STORAGE_BACKEND: $(yaml-quote ${STORAGE_BACKEND:-etcd3})
+IGNITE_STORAGE_BACKEND: $(yaml-quote ${IGNITE_STORAGE_BACKEND:-etcd3})
 STORAGE_MEDIA_TYPE: $(yaml-quote ${STORAGE_MEDIA_TYPE:-})
 ENABLE_GARBAGE_COLLECTOR: $(yaml-quote ${ENABLE_GARBAGE_COLLECTOR:-})
 ENABLE_LEGACY_ABAC: $(yaml-quote ${ENABLE_LEGACY_ABAC:-})
@@ -3407,9 +3408,11 @@ function kube-down() {
 
   set-existing-master
 
-  # Un-register the master replica from etcd and events etcd.
-  remove-replica-from-etcd 2379 true
-  remove-replica-from-etcd 4002 false
+  if [[ -n "${IGNITE_STORAGE_BACKEND:-}" ]]; then
+    # Un-register the master replica from etcd and events etcd.
+    remove-replica-from-etcd 2379 true
+    remove-replica-from-etcd 4002 false
+  fi
 
   # Delete the master replica (if it exists).
   if gcloud compute instances describe "${REPLICA_NAME}" --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then

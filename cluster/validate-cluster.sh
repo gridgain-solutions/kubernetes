@@ -161,10 +161,11 @@ while true; do
   # Echo the output and gather 2 counts:
   #  - Total number of componentstatuses.
   #  - Number of "healthy" components.
-  cs_status=$(kubectl_retry get componentstatuses -o template --template='{{range .items}}{{with index .conditions 0}}{{.type}}:{{.status}}{{end}}{{"\n"}}{{end}}') || true
-  componentstatuses=$(echo "${cs_status}" | grep -c 'Healthy:') || true
-  healthy=$(echo "${cs_status}" | grep -c 'Healthy:True') || true
-
+  cs_status=$(kubectl_retry get componentstatuses -o template --template='{{range .items}}{{.metadata.name}}:{{with index .conditions 0}}{{.type}}:{{.status}}{{end}}{{"\n"}}{{end}}') || true
+  # Exclude etcd: in Kubernetes v1.19+ etcd does not have to expose HTTP/1.1 /health endpoint. Apiserver health check includes etcd health check.
+  componentstatuses=$(echo "${cs_status}" | grep -v 'etcd' | grep -c 'Healthy:') || true
+  healthy=$(echo "${cs_status}" | grep -v 'etcd' | grep -c 'Healthy:True') || true
+  
   if ((componentstatuses > healthy)) || ((componentstatuses == 0)); then
     if ((attempt < 5)); then
       echo -e "${color_yellow}Cluster not working yet.${color_norm}"

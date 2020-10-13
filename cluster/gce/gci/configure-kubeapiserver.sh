@@ -18,23 +18,29 @@
 function configure-etcd-params {
   local -n params_ref=$1
 
-  if [[ -n "${ETCD_APISERVER_CA_KEY:-}" && -n "${ETCD_APISERVER_CA_CERT:-}" && -n "${ETCD_APISERVER_SERVER_KEY:-}" && -n "${ETCD_APISERVER_SERVER_CERT:-}" && -n "${ETCD_APISERVER_CLIENT_KEY:-}" && -n "${ETCD_APISERVER_CLIENT_CERT:-}" ]]; then
-      params_ref+=" --etcd-servers=${ETCD_SERVERS:-https://127.0.0.1:2379}"
-      params_ref+=" --etcd-cafile=${ETCD_APISERVER_CA_CERT_PATH}"
-      params_ref+=" --etcd-certfile=${ETCD_APISERVER_CLIENT_CERT_PATH}"
-      params_ref+=" --etcd-keyfile=${ETCD_APISERVER_CLIENT_KEY_PATH}"
-  elif [[ -z "${ETCD_APISERVER_CA_KEY:-}" && -z "${ETCD_APISERVER_CA_CERT:-}" && -z "${ETCD_APISERVER_SERVER_KEY:-}" && -z "${ETCD_APISERVER_SERVER_CERT:-}" && -z "${ETCD_APISERVER_CLIENT_KEY:-}" && -z "${ETCD_APISERVER_CLIENT_CERT:-}" ]]; then
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+      # Store both KVs and events in the same Ignite
+      # TODO: add TLS for Ignite
       params_ref+=" --etcd-servers=${ETCD_SERVERS:-http://127.0.0.1:2379}"
-      echo "WARNING: ALL of ETCD_APISERVER_CA_KEY, ETCD_APISERVER_CA_CERT, ETCD_APISERVER_SERVER_KEY, ETCD_APISERVER_SERVER_CERT, ETCD_APISERVER_CLIENT_KEY and ETCD_APISERVER_CLIENT_CERT are missing, mTLS between etcd server and kube-apiserver is not enabled."
-  else
-      echo "ERROR: Some of ETCD_APISERVER_CA_KEY, ETCD_APISERVER_CA_CERT, ETCD_APISERVER_SERVER_KEY, ETCD_APISERVER_SERVER_CERT, ETCD_APISERVER_CLIENT_KEY and ETCD_APISERVER_CLIENT_CERT are missing, mTLS between etcd server and kube-apiserver cannot be enabled. Please provide all mTLS credential."
-      exit 1
-  fi
+  else    
+    if [[ -n "${ETCD_APISERVER_CA_KEY:-}" && -n "${ETCD_APISERVER_CA_CERT:-}" && -n "${ETCD_APISERVER_SERVER_KEY:-}" && -n "${ETCD_APISERVER_SERVER_CERT:-}" && -n "${ETCD_APISERVER_CLIENT_KEY:-}" && -n "${ETCD_APISERVER_CLIENT_CERT:-}" ]]; then
+        params_ref+=" --etcd-servers=${ETCD_SERVERS:-https://127.0.0.1:2379}"
+        params_ref+=" --etcd-cafile=${ETCD_APISERVER_CA_CERT_PATH}"
+        params_ref+=" --etcd-certfile=${ETCD_APISERVER_CLIENT_CERT_PATH}"
+        params_ref+=" --etcd-keyfile=${ETCD_APISERVER_CLIENT_KEY_PATH}"
+    elif [[ -z "${ETCD_APISERVER_CA_KEY:-}" && -z "${ETCD_APISERVER_CA_CERT:-}" && -z "${ETCD_APISERVER_SERVER_KEY:-}" && -z "${ETCD_APISERVER_SERVER_CERT:-}" && -z "${ETCD_APISERVER_CLIENT_KEY:-}" && -z "${ETCD_APISERVER_CLIENT_CERT:-}" ]]; then
+        params_ref+=" --etcd-servers=${ETCD_SERVERS:-http://127.0.0.1:2379}"
+        echo "WARNING: ALL of ETCD_APISERVER_CA_KEY, ETCD_APISERVER_CA_CERT, ETCD_APISERVER_SERVER_KEY, ETCD_APISERVER_SERVER_CERT, ETCD_APISERVER_CLIENT_KEY and ETCD_APISERVER_CLIENT_CERT are missing, mTLS between etcd server and kube-apiserver is not enabled."
+    else
+        echo "ERROR: Some of ETCD_APISERVER_CA_KEY, ETCD_APISERVER_CA_CERT, ETCD_APISERVER_SERVER_KEY, ETCD_APISERVER_SERVER_CERT, ETCD_APISERVER_CLIENT_KEY and ETCD_APISERVER_CLIENT_CERT are missing, mTLS between etcd server and kube-apiserver cannot be enabled. Please provide all mTLS credential."
+        exit 1
+    fi
 
-  if [[ -z "${ETCD_SERVERS:-}" ]]; then
-    params_ref+=" --etcd-servers-overrides=${ETCD_SERVERS_OVERRIDES:-/events#http://127.0.0.1:4002}"
-  elif [[ -n "${ETCD_SERVERS_OVERRIDES:-}" ]]; then
-    params_ref+=" --etcd-servers-overrides=${ETCD_SERVERS_OVERRIDES:-}"
+    if [[ -z "${ETCD_SERVERS:-}" ]]; then
+      params_ref+=" --etcd-servers-overrides=${ETCD_SERVERS_OVERRIDES:-/events#http://127.0.0.1:4002}"
+    elif [[ -n "${ETCD_SERVERS_OVERRIDES:-}" ]]; then
+      params_ref+=" --etcd-servers-overrides=${ETCD_SERVERS_OVERRIDES:-}"
+    fi
   fi
 
   if [[ -n "${STORAGE_BACKEND:-}" ]]; then
