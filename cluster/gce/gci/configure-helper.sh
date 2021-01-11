@@ -1696,6 +1696,27 @@ function prepare-etcd-manifest {
   mv "${temp_file}" /etc/kubernetes/manifests
 }
 
+# Replaces the variables in the ignite-etcd manifest file with the real values, and then
+# copy the file to the manifest dir
+# $1: value for variable 'port'
+# $2: value for variable 'cpulimit'
+function prepare-ignite-etcd-manifest {
+  local -r temp_file="/tmp/ignite-etcd.manifest"
+
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_file}"
+
+  sed -i -e "s@{{ *port *}}@$1@g" "${temp_file}"
+  sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
+
+  # Replace the volume host path.
+  sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
+
+  mv "${temp_file}" /etc/kubernetes/manifests
+
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" /etc/srv/kubernetes
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
+}
+
 # Starts etcd server pod (and etcd-events pod if needed).
 # More specifically, it prepares dirs and files, sets the variable value
 # in the manifests, and copies them to /etc/kubernetes/manifests.
@@ -1713,11 +1734,16 @@ function start-etcd-servers {
   if [[ -e /etc/init.d/etcd ]]; then
     rm -f /etc/init.d/etcd
   fi
-  prepare-log-file /var/log/etcd.log
-  prepare-etcd-manifest "" "2379" "2380" "200m" "etcd.manifest"
 
-  prepare-log-file /var/log/etcd-events.log
-  prepare-etcd-manifest "-events" "4002" "2381" "100m" "etcd-events.manifest"
+  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+    prepare-ignite-etcd-manifest "2379" "200m"
+  else
+    prepare-log-file /var/log/etcd.log
+    prepare-etcd-manifest "" "2379" "2380" "200m" "etcd.manifest"
+
+    prepare-log-file /var/log/etcd-events.log
+    prepare-etcd-manifest "-events" "4002" "2381" "100m" "etcd-events.manifest"
+  fi
 }
 
 # Replaces the variables in the konnectivity-server manifest file with the real values, and then
