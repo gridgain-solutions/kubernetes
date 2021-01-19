@@ -1724,8 +1724,8 @@ function prepare-ignite-etcd-manifest {
   # Replace the volume host path.
   sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
 
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd-service.yaml" /etc/kubernetes/manifests
   mv "${temp_file}" /etc/kubernetes/manifests
-
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" /etc/srv/kubernetes
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
 }

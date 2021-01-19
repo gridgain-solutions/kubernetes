@@ -446,6 +446,7 @@ function kube::release::package_kube_manifests_tarball() {
     find "${KUBE_ROOT}/${d}" \( \( -name \*.yaml -o -name \*.yaml.in -o -name \*.json \) -a ! \( -name \*demo\* \) \) -print0 | "${TAR}" c --transform "s|${KUBE_ROOT#/*}/${d}||" --null -T - | "${TAR}" x -C "${dst_dir}"
   done
 
+  cp "${src_dir}/ignite-etcd-service.yaml" "${dst_dir}"
   cp "${src_dir}/ignite-etcd.manifest" "${dst_dir}"
   cp "${src_dir}/ignite-etcd.xml" "${dst_dir}"
   cp "${src_dir}/java.util.logging.properties" "${dst_dir}"
