@@ -1707,6 +1707,19 @@ function prepare-ignite-etcd-manifest {
 
   sed -i -e "s@{{ *port *}}@$1@g" "${temp_file}"
   sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
+  sed -i -e "s@{{ *replicas *}}@\"${IGNITE_STORAGE_SIZE}\"@g" "${temp_file}"
+
+  if [[ -n "${ETCD_IMAGE:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_file}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_file}"
+  fi
+
+  if [[ -n "${ETCD_DOCKER_REPOSITORY:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@${ETCD_DOCKER_REPOSITORY}@g" "${temp_file}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@\1@g" "${temp_file}"
+  fi
 
   # Replace the volume host path.
   sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
@@ -1735,8 +1748,8 @@ function start-etcd-servers {
     rm -f /etc/init.d/etcd
   fi
 
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
-    prepare-ignite-etcd-manifest "2379" "200m"
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
+    prepare-ignite-etcd-manifest "2379" "200m" 
   else
     prepare-log-file /var/log/etcd.log
     prepare-etcd-manifest "" "2379" "2380" "200m" "etcd.manifest"

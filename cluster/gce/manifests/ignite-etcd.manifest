@@ -1,85 +1,127 @@
 {
   "apiVersion": "v1",
-  "kind": "Pod",
+  "kind": "StatefulSet",
   "metadata": {
-    "name":"etcd-server",
+    "name": "etcd-server",
     "namespace": "kube-system",
     "annotations": {
       "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
     }
   },
   "spec": {
-    "priorityClassName": "system-node-critical",
-    "priority": 2000001000,
-    "hostNetwork": true,
-    "containers": [
-      {
-        "name": "etcd-container",
-        "image": "kukushal/ignite-etcd:1.0.0-SNAPSHOT",
-        "resources": {
-          "requests": {
-            "cpu": {{ cpulimit }}
-          }
-        },
-        "command": [
-          "/opt/ignite-etcd/bin/ignite-etcd",
-          "--server-port", 
-          "{{ port }}",
-          "--ignite-config",
-          "/etc/srv/kubernetes/ignite-etcd.xml"
-        ],
-        "env": [
+    "replicas": {{ replicas }},
+    "serviceName": "ignite-etcd-service",
+    "selector": {
+      "matchLabels": {
+        "app": "ignite-etcd"
+      }
+    }
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "ignite-etcd"
+        }
+      },
+      "spec": {
+        "priorityClassName": "system-node-critical",
+        "priority": 2000001000,
+        "hostNetwork": true,
+        "terminationGracePeriodSeconds": 60,
+        "containers": [
           {
-            "name": "IGNITE_ETCD_OPTS",
-            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true"
+            "name": "etcd-container",
+            "image": "{{ pillar.get('etcd_docker_repository', 'kukushal/ignite-etcd') }}:{{ pillar.get('etcd_docker_tag', '1.0.0-SNAPSHOT') }}",
+            "resources": {
+              "requests": {
+                "cpu": {{ cpulimit }}
+              }
+            },
+            "command": [
+              "/opt/ignite-etcd/bin/ignite-etcd",
+              "--server-port",
+              "{{ port }}",
+              "--ignite-config",
+              "/etc/srv/kubernetes/ignite-etcd.xml"
+            ],
+            "env": [
+              {
+                "name": "IGNITE_ETCD_OPTS",
+                "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true"
+              }
+            ],
+            "ports": [
+              {
+                "name": "clientport",
+                "containerPort": {{ port }},
+                "hostPort": {{ port }}
+              },
+              {
+                "name": "comport",
+                "containerPort": 47100,
+                "hostPort": 47100
+              },
+              {
+                "name": "discoport",
+                "containerPort": 47500,
+                "hostPort": 47500
+              },
+              {
+                "name": "jmxport",
+                "containerPort": 49112,
+                "hostPort": 49112
+              },
+              {
+                "name": "thinclientport",
+                "containerPort": 10800,
+                "hostPort": 10800
+              },
+              {
+                "name": "restport",
+                "containerPort": 8080,
+                "hostPort": 8080
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "varetcd",
+                "mountPath": "/var/etcd",
+                "readOnly": false
+              },
+              {
+                "name": "varwork",
+                "mountPath": "/var/ignite-work",
+                "readOnly": false
+              },
+              {
+                "name": "etc",
+                "mountPath": "/etc/srv/kubernetes",
+                "readOnly": false
+              }
+            ]
           }
         ],
-        "ports": [
-          {
-            "name": "clientport",
-            "containerPort": {{ port }},
-            "hostPort": {{ port }}
-          }
-        ],
-        "volumeMounts": [
+        "volumes": [
           {
             "name": "varetcd",
-            "mountPath": "/var/etcd",
-            "readOnly": false
+            "hostPath": {
+              "path": "/mnt/master-pd/var/etcd"
+            }
           },
-          { 
+          {
             "name": "varwork",
-            "mountPath": "/var/ignite-work",
-            "readOnly": false
+            "hostPath": {
+              "path": "/var/ignite-work",
+              "type": "DirectoryOrCreate"
+            }
           },
           {
             "name": "etc",
-            "mountPath": "/etc/srv/kubernetes",
-            "readOnly": false
+            "hostPath": {
+              "path": "/etc/srv/kubernetes"
+            }
           }
         ]
       }
-    ],
-    "volumes": [
-      {
-        "name": "varetcd",
-        "hostPath": {
-          "path": "/mnt/master-pd/var/etcd"
-        }
-      },
-      {
-        "name": "varwork",
-        "hostPath": {
-          "path": "/var/ignite-work",
-          "type": "DirectoryOrCreate"
-        }
-      },
-      { 
-        "name": "etc",
-        "hostPath": {
-          "path": "/etc/srv/kubernetes"
-        }
-      }
-    ]
+    }
   }
 }

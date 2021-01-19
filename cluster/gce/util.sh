@@ -1321,7 +1321,7 @@ KUBECFG_KEY: $(yaml-quote ${KUBECFG_KEY_BASE64:-})
 KUBELET_APISERVER: $(yaml-quote ${KUBELET_APISERVER:-})
 NUM_NODES: $(yaml-quote ${NUM_NODES})
 STORAGE_BACKEND: $(yaml-quote ${STORAGE_BACKEND:-etcd3})
-IGNITE_STORAGE_BACKEND: $(yaml-quote ${IGNITE_STORAGE_BACKEND:-etcd3})
+IGNITE_STORAGE_SIZE: $(yaml-quote ${IGNITE_STORAGE_SIZE:-})
 STORAGE_MEDIA_TYPE: $(yaml-quote ${STORAGE_MEDIA_TYPE:-})
 ENABLE_GARBAGE_COLLECTOR: $(yaml-quote ${ENABLE_GARBAGE_COLLECTOR:-})
 ENABLE_LEGACY_ABAC: $(yaml-quote ${ENABLE_LEGACY_ABAC:-})
@@ -3408,7 +3408,7 @@ function kube-down() {
 
   set-existing-master
 
-  if [[ -n "${IGNITE_STORAGE_BACKEND:-}" ]]; then
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
     # Un-register the master replica from etcd and events etcd.
     remove-replica-from-etcd 2379 true
     remove-replica-from-etcd 4002 false

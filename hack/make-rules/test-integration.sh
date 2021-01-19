@@ -61,7 +61,7 @@ cleanup() {
 }
 
 runTests() {
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
     # TODO: start ignite-etcd
     kube::log::status "Run ignite-etcd manually"
   else
@@ -83,7 +83,7 @@ runTests() {
       KUBE_RACE="" \
       KUBE_TIMEOUT="${KUBE_TIMEOUT}"
 
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
     # TODO: cleanup ignite-etcd
     kube::log::status "Clean ignite-etcd manually"
   else
@@ -93,7 +93,7 @@ runTests() {
 
 checkEtcdOnPath() {
   kube::log::status "Checking etcd is on PATH"
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
     # TODO: check ignite-etcd
     return
   fi

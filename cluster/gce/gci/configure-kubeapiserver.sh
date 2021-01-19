@@ -18,7 +18,7 @@
 function configure-etcd-params {
   local -n params_ref=$1
 
-  if [[ "${IGNITE_STORAGE_BACKEND:-}" == "true" ]]; then
+  if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
       # Store both KVs and events in the same Ignite
       # TODO: add TLS for Ignite
       params_ref+=" --etcd-servers=${ETCD_SERVERS:-http://127.0.0.1:2379}"

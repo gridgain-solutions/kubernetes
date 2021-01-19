@@ -429,8 +429,8 @@ TEST_CLUSTER=${TEST_CLUSTER:-true}
 # Storage backend. 'etcd2' and 'etcd3' are supported.
 STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
-# Whether ignite should be used as etcd3-compatible storage backend
-IGNITE_STORAGE_BACKEND=${IGNITE_STORAGE_BACKEND:-}
+# If set to a positive number Ignite cluster of the specified size should be used as etcd3-compatible storage backend.
+IGNITE_STORAGE_SIZE=${IGNITE_STORAGE_SIZE:-}
 
 # Storage media type: application/json and application/vnd.kubernetes.protobuf are supported.
 STORAGE_MEDIA_TYPE=${STORAGE_MEDIA_TYPE:-}
