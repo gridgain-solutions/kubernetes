@@ -1707,7 +1707,7 @@ function prepare-ignite-etcd-manifest {
 
   sed -i -e "s@{{ *port *}}@$1@g" "${temp_file}"
   sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
-  sed -i -e "s@{{ *replicas *}}@\"${IGNITE_STORAGE_SIZE}\"@g" "${temp_file}"
+  sed -i -e "s@{{ *replicas *}}@${IGNITE_STORAGE_SIZE}@g" "${temp_file}"
 
   if [[ -n "${ETCD_IMAGE:-}" ]]; then
     sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_file}"

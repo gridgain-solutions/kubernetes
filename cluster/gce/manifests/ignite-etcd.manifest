@@ -15,7 +15,7 @@
       "matchLabels": {
         "app": "ignite-etcd"
       }
-    }
+    },
     "template": {
       "metadata": {
         "labels": {
