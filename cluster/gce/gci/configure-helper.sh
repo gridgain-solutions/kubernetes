@@ -1703,7 +1703,7 @@ function prepare-etcd-manifest {
 function prepare-ignite-etcd-manifest {
   for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
     # Create separate POD specification for every Ignite node
-    local -r temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
+    local temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
@@ -1728,7 +1728,7 @@ function prepare-ignite-etcd-manifest {
     mv "${temp_pod_spec}" /etc/kubernetes/manifests
 
     # Create separate configuration for every Ignite node
-    local -r temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
+    local temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
 
