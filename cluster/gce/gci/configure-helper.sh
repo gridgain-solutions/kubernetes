@@ -1730,7 +1730,7 @@ function prepare-ignite-etcd-manifest {
     # Create separate configuration for every Ignite node
     local -r temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
 
-    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_pod_spec}"
+    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
 
     sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_ignite_cfg}"
 

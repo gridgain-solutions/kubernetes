@@ -1,8 +1,8 @@
 {
-  "apiVersion": "apps/v1",
+  "apiVersion": "v1",
   "kind": "Pod",
   "metadata": {
-    "name": "ignite-etcd{{ suffix }}",
+    "name": "ignite-etcd-{{ suffix }}",
     "namespace": "kube-system",
     "annotations": {
       "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
@@ -27,7 +27,7 @@
           "--server-port",
           "{{ port }}",
           "--ignite-config",
-          "/etc/srv/kubernetes/ignite-etcd{{ suffix }}.xml"
+          "/etc/srv/kubernetes/ignite-etcd-{{ suffix }}.xml"
         ],
         "env": [
           {
