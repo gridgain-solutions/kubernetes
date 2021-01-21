@@ -1701,32 +1701,43 @@ function prepare-etcd-manifest {
 # $1: value for variable 'port'
 # $2: value for variable 'cpulimit'
 function prepare-ignite-etcd-manifest {
-  local -r temp_file="/tmp/ignite-etcd.manifest"
+  for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
+    # Create separate POD specification for every Ignite node
+    local -r temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
 
-  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_file}"
+    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
-  sed -i -e "s@{{ *port *}}@$1@g" "${temp_file}"
-  sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_file}"
-  sed -i -e "s@{{ *replicas *}}@${IGNITE_STORAGE_SIZE}@g" "${temp_file}"
+    sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *port *}}@$1@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_pod_spec}"
 
-  if [[ -n "${ETCD_IMAGE:-}" ]]; then
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_file}"
-  else
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_file}"
-  fi
+    if [[ -n "${ETCD_IMAGE:-}" ]]; then
+      sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_pod_spec}"
+    else
+      sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
+    fi
 
-  if [[ -n "${ETCD_DOCKER_REPOSITORY:-}" ]]; then
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@${ETCD_DOCKER_REPOSITORY}@g" "${temp_file}"
-  else
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@\1@g" "${temp_file}"
-  fi
+    if [[ -n "${ETCD_DOCKER_REPOSITORY:-}" ]]; then
+      sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@${ETCD_DOCKER_REPOSITORY}@g" "${temp_pod_spec}"
+    else
+      sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
+    fi
 
-  # Replace the volume host path.
-  sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
+    sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_pod_spec}"
 
-  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd-service.yaml" /etc/kubernetes/manifests
-  mv "${temp_file}" /etc/kubernetes/manifests
-  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" /etc/srv/kubernetes
+    mv "${temp_pod_spec}" /etc/kubernetes/manifests
+
+    # Create separate configuration for every Ignite node
+    local -r temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
+
+    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_pod_spec}"
+
+    sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_ignite_cfg}"
+
+    mv "${temp_ignite_cfg}" /etc/srv/kubernetes
+  done
+
+  # Logging configuration is the same for every Ignite node
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
 }
 

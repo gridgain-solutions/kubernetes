@@ -24,7 +24,6 @@ filegroup(
         "kube-proxy.manifest",
         "kube-scheduler.manifest",
         "ignite-etcd.manifest",
-        "ignite-etcd-service.yaml",
         "ignite-etcd.xml",
         "java.util.logging.properties",
     ] + glob(["internal-*"]),
