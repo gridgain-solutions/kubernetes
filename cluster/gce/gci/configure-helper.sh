@@ -1739,7 +1739,7 @@ function prepare-ignite-etcd-manifest {
 
     sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_pod_spec}"
 
-    mv "${temp_pod_spec}" "${HOME}/Downloads/1"
+    mv "${temp_pod_spec}" /etc/kubernetes/manifests
 
     # Create separate configuration for every Ignite node
     local temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
@@ -1751,11 +1751,11 @@ function prepare-ignite-etcd-manifest {
     sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_ignite_cfg}"
     sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_ignite_cfg}"
 
-    mv "${temp_ignite_cfg}" "${HOME}/Downloads/1"
+    mv "${temp_ignite_cfg}" /etc/srv/kubernetes
   done
 
   # Logging configuration is the same for every Ignite node
-  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" "${HOME}/Downloads/1"
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
 }
 
 # Starts etcd server pod (and etcd-events pod if needed).
