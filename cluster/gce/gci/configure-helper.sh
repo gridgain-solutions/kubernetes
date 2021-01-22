@@ -1701,15 +1701,29 @@ function prepare-etcd-manifest {
 # $1: value for variable 'port'
 # $2: value for variable 'cpulimit'
 function prepare-ignite-etcd-manifest {
+  local -r port=$1
+  local -r cpulimit=$2
+
   for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
     # Create separate POD specification for every Ignite node
     local temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
+    local clientport=$((port+i-1))
+    local comport=$((47100+i-1))
+    local discoport=$((47500+i-1))
+    local jmxport=$((49112+i-1))
+    local thinclientport=$((10800+i-1))
+    local restport=$((8080+i-1))
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
     sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *port *}}@$1@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *cpulimit *}}@\"$2\"@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *jmxport *}}@${jmxport}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *restport *}}@${restport}@g" "${temp_pod_spec}"
 
     if [[ -n "${ETCD_IMAGE:-}" ]]; then
       sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_pod_spec}"
@@ -1725,7 +1739,7 @@ function prepare-ignite-etcd-manifest {
 
     sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_pod_spec}"
 
-    mv "${temp_pod_spec}" /etc/kubernetes/manifests
+    mv "${temp_pod_spec}" "${HOME}/Downloads/1"
 
     # Create separate configuration for every Ignite node
     local temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
@@ -1733,12 +1747,15 @@ function prepare-ignite-etcd-manifest {
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
 
     sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_ignite_cfg}"
+    sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_ignite_cfg}"
+    sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_ignite_cfg}"
+    sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_ignite_cfg}"
 
-    mv "${temp_ignite_cfg}" /etc/srv/kubernetes
+    mv "${temp_ignite_cfg}" "${HOME}/Downloads/1"
   done
 
   # Logging configuration is the same for every Ignite node
-  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" "${HOME}/Downloads/1"
 }
 
 # Starts etcd server pod (and etcd-events pod if needed).
@@ -1760,7 +1777,7 @@ function start-etcd-servers {
   fi
 
   if [[ ${IGNITE_STORAGE_SIZE:-} -gt 0 ]]; then
-    prepare-ignite-etcd-manifest "2379" "200m" 
+    prepare-ignite-etcd-manifest "2379" "200m"
   else
     prepare-log-file /var/log/etcd.log
     prepare-etcd-manifest "" "2379" "2380" "200m" "etcd.manifest"

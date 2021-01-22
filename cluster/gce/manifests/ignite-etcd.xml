@@ -5,6 +5,7 @@
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
         <property name="consistentId" value="ignite-etcd-{{ suffix }}"/>
         <property name="workDirectory" value="/var/ignite-work"/>
+        <property name="metricsLogFrequency" value="0"/>
 
         <property name="dataStorageConfiguration">
             <bean class="org.apache.ignite.configuration.DataStorageConfiguration">
@@ -17,11 +18,24 @@
             </bean>
         </property>
 
+        <property name="clientConnectorConfiguration">
+            <bean class="org.apache.ignite.configuration.ClientConnectorConfiguration">
+                <property name="port" value="{{ thinclientport }}"/>
+            </bean>
+        </property>
+
         <property name="discoverySpi">
             <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
+                <property name="localPort" value="{{ discoport }}"/>
                 <property name="ipFinder">
                     <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder"/>
                 </property>
+            </bean>
+        </property>
+
+        <property name="communicationSpi">
+            <bean class="org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi">
+                <property name="localPort" value="{{ comport }}"/>
             </bean>
         </property>
     </bean>

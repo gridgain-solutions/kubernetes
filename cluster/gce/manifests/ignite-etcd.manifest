@@ -15,7 +15,7 @@
     "terminationGracePeriodSeconds": 60,
     "containers": [
       {
-        "name": "ignite-etcd-container",
+        "name": "ignite-etcd-{{ suffix }}",
         "image": "{{ pillar.get('etcd_docker_repository', 'kukushal/ignite-etcd') }}:{{ pillar.get('etcd_docker_tag', '1.0.0-SNAPSHOT') }}",
         "resources": {
           "requests": {
@@ -32,7 +32,7 @@
         "env": [
           {
             "name": "IGNITE_ETCD_OPTS",
-            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true"
+            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true -DIGNITE_JMX_PORT={{ jmxport }} -DIGNITE_JETTY_PORT={{ restport }}"
           }
         ],
         "ports": [
@@ -43,28 +43,28 @@
           },
           {
             "name": "comport",
-            "containerPort": 47100,
-            "hostPort": 47100
+            "containerPort": {{ comport }},
+            "hostPort": {{ comport }}
           },
           {
             "name": "discoport",
-            "containerPort": 47500,
-            "hostPort": 47500
+            "containerPort": {{ discoport }},
+            "hostPort": {{ discoport }}
           },
           {
             "name": "jmxport",
-            "containerPort": 49112,
-            "hostPort": 49112
+            "containerPort": {{ jmxport }},
+            "hostPort": {{ jmxport }}
           },
           {
             "name": "thinclientport",
-            "containerPort": 10800,
-            "hostPort": 10800
+            "containerPort": {{ thinclientport }},
+            "hostPort": {{ thinclientport }}
           },
           {
             "name": "restport",
-            "containerPort": 8080,
-            "hostPort": 8080
+            "containerPort": {{ restport }},
+            "hostPort": {{ restport }}
           }
         ],
         "volumeMounts": [
