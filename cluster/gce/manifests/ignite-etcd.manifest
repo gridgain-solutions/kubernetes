@@ -6,6 +6,9 @@
     "namespace": "kube-system",
     "annotations": {
       "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
+    },
+    "labels": {
+      "app" : "ignite-etcd"
     }
   },
   "spec": {
