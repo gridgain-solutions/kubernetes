@@ -1,0 +1,45 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "haproxy",
+    "namespace": "kube-system",
+    "annotations": {
+      "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
+    }
+  },
+  "spec": {
+    "priorityClassName": "system-node-critical",
+    "priority": 2000001000,
+    "hostNetwork": true,
+    "terminationGracePeriodSeconds": 60,
+    "containers": [
+      {
+        "name": "haproxy",
+        "image": "haproxytech/haproxy-alpine:2.2.8",
+        "ports": [
+          {
+            "name": "clientport",
+            "containerPort": {{ port }},
+            "hostPort": {{ port }}
+          }
+        ],
+        "volumeMounts": [
+          {
+            "name": "cfg",
+            "mountPath": "/usr/local/etc/haproxy/haproxy.cfg",
+            "readOnly": false
+          }
+        ]
+      }
+    ],
+    "volumes": [
+      {
+        "name": "cfg",
+        "hostPath": {
+          "path": "/etc/srv/kubernetes/haproxy.cfg"
+        }
+      }
+    ]
+  }
+}

@@ -1706,7 +1706,6 @@ function prepare-ignite-etcd-manifest {
 
   # Run single-node (IGNITE_STORAGE_SIZE equals 1) ignite-etcd on the specified "port".
   # Run mutiple-nodes ignite-etcd on port+1, ..., port+N behind a load balancer, which runs on the specified port. 
-  # Create separate POD specification for every Ignite node.
   local -r is_single=$((IGNITE_STORAGE_SIZE == 1))
 
   for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
@@ -1715,6 +1714,7 @@ function prepare-ignite-etcd-manifest {
       suffix=""
     fi
 
+    # Create separate POD specification for every Ignite node.
     local temp_pod_spec="/tmp/ignite-etcd${suffix}.manifest"
     local clientport=$((port + i - is_single))
     local comport=$((47100 + i - is_single))
@@ -1765,6 +1765,31 @@ function prepare-ignite-etcd-manifest {
 
   # Logging configuration is the same for every Ignite node
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
+
+  # Create HAProxy pod for load balancing
+  if [[ ${is_single} -eq 0 ]]; then
+    # Create HAProxy configuration
+    local haproxy_cfg="/tmp/haproxy.cfg"
+    
+    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.cfg" "${haproxy_cfg}"
+
+    sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_cfg}"
+
+    for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
+      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP}:$((port+i))" >> "${haproxy_cfg}"
+    done
+
+    mv "${haproxy_cfg}" /etc/srv/kubernetes
+
+    # Create HAProxy configuration
+    local haproxy_spec="/tmp/haproxy.manifest"
+    
+    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.manifest" "${haproxy_spec}"
+
+    sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_spec}"
+
+    mv "${haproxy_spec}" /etc/kubernetes/manifests
+  fi
 }
 
 # Starts etcd server pod (and etcd-events pod if needed).
