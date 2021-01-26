@@ -1707,12 +1707,12 @@ function prepare-ignite-etcd-manifest {
   for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
     # Create separate POD specification for every Ignite node
     local temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
-    local clientport=$((port+i-1))
-    local comport=$((47100+i-1))
-    local discoport=$((47500+i-1))
-    local jmxport=$((49112+i-1))
-    local thinclientport=$((10800+i-1))
-    local restport=$((8080+i-1))
+    local clientport=$((port+i))
+    local comport=$((47100+i))
+    local discoport=$((47500+i))
+    local jmxport=$((49112+i))
+    local thinclientport=$((10800+i))
+    local restport=$((8080+i))
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
