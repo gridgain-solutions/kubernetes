@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans 
     http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
-        <property name="consistentId" value="ignite-etcd-{{ suffix }}"/>
+        <property name="consistentId" value="ignite-etcd{{ suffix }}"/>
         <property name="workDirectory" value="/var/ignite-work"/>
         <property name="metricsLogFrequency" value="0"/>
 

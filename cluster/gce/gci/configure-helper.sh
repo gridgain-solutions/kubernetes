@@ -1704,19 +1704,28 @@ function prepare-ignite-etcd-manifest {
   local -r port=$1
   local -r cpulimit=$2
 
+  # Run single-node (IGNITE_STORAGE_SIZE equals 1) ignite-etcd on the specified "port".
+  # Run mutiple-nodes ignite-etcd on port+1, ..., port+N behind a load balancer, which runs on the specified port. 
+  # Create separate POD specification for every Ignite node.
+  local -r is_single=$((IGNITE_STORAGE_SIZE == 1))
+
   for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
-    # Create separate POD specification for every Ignite node
-    local temp_pod_spec="/tmp/ignite-etcd-${i}.manifest"
-    local clientport=$((port+i))
-    local comport=$((47100+i))
-    local discoport=$((47500+i))
-    local jmxport=$((49112+i))
-    local thinclientport=$((10800+i))
-    local restport=$((8080+i))
+    local suffix="-${i}"
+    if [[ ${is_single} -eq 1 ]]; then
+      suffix=""
+    fi
+
+    local temp_pod_spec="/tmp/ignite-etcd${suffix}.manifest"
+    local clientport=$((port + i - is_single))
+    local comport=$((47100 + i - is_single))
+    local discoport=$((47500 + i - is_single))
+    local jmxport=$((49112 + i - is_single))
+    local thinclientport=$((10800 + i - is_single))
+    local restport=$((8080 + i - is_single))
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
-    sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
     sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
     sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
     sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
@@ -1742,11 +1751,11 @@ function prepare-ignite-etcd-manifest {
     mv "${temp_pod_spec}" /etc/kubernetes/manifests
 
     # Create separate configuration for every Ignite node
-    local temp_ignite_cfg="/tmp/ignite-etcd-${i}.xml"
+    local temp_ignite_cfg="/tmp/ignite-etcd${suffix}.xml"
 
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
 
-    sed -i -e "s@{{ *suffix *}}@${i}@g" "${temp_ignite_cfg}"
+    sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_ignite_cfg}"
     sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_ignite_cfg}"
     sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_ignite_cfg}"
     sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_ignite_cfg}"
