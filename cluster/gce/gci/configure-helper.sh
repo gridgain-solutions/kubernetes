@@ -1701,6 +1701,10 @@ function prepare-etcd-manifest {
 # $1: value for variable 'port'
 # $2: value for variable 'cpulimit'
 function prepare-ignite-etcd-manifest {
+  if [[ ${IGNITE_STORAGE_SIZE:-0} -eq 0 ]]; then
+    return
+  fi
+
   local -r port=$1
   local -r cpulimit=$2
 
@@ -1708,7 +1712,7 @@ function prepare-ignite-etcd-manifest {
   # Run mutiple-nodes ignite-etcd on port+1, ..., port+N behind a load balancer, which runs on the specified port. 
   local -r is_single=$((IGNITE_STORAGE_SIZE == 1))
 
-  for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
+  for i in $(seq ${IGNITE_STORAGE_SIZE}); do
     local suffix="-${i}"
     if [[ ${is_single} -eq 1 ]]; then
       suffix=""
@@ -1775,8 +1779,8 @@ function prepare-ignite-etcd-manifest {
 
     sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_cfg}"
 
-    for i in $(seq ${IGNITE_STORAGE_SIZE:-}); do
-      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP}:$((port+i))" >> "${haproxy_cfg}"
+    for i in $(seq ${IGNITE_STORAGE_SIZE}); do
+      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP:-127.0.0.1}:$((port+i))" >> "${haproxy_cfg}"
     done
 
     mv "${haproxy_cfg}" /etc/srv/kubernetes
