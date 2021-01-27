@@ -26,6 +26,8 @@ filegroup(
         "ignite-etcd.manifest",
         "ignite-etcd.xml",
         "java.util.logging.properties",
+        "haproxy.cfg",
+        "haproxy.manifest",
     ] + glob(["internal-*"]),
 )
 

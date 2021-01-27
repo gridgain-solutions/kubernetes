@@ -449,6 +449,8 @@ function kube::release::package_kube_manifests_tarball() {
   cp "${src_dir}/ignite-etcd.manifest" "${dst_dir}"
   cp "${src_dir}/ignite-etcd.xml" "${dst_dir}"
   cp "${src_dir}/java.util.logging.properties" "${dst_dir}"
+  cp "${src_dir}/haproxy.cfg" "${dst_dir}"
+  cp "${src_dir}/haproxy.manifest" "${dst_dir}"
 
   kube::release::clean_cruft
 
