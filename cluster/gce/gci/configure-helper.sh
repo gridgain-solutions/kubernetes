@@ -1773,20 +1773,21 @@ function prepare-ignite-etcd-manifest {
   # Create HAProxy pod for load balancing
   if [[ ${is_single} -eq 0 ]]; then
     # Create HAProxy configuration
-    local haproxy_cfg="/tmp/haproxy.cfg"
+    local -r haproxy_cfg="/tmp/haproxy.cfg"
+    local -r host_name=${ETCD_HOSTNAME:-$(hostname -s)}
     
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.cfg" "${haproxy_cfg}"
 
     sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_cfg}"
 
     for i in $(seq ${IGNITE_STORAGE_SIZE}); do
-      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP:-127.0.0.1}:$((port+i))" >> "${haproxy_cfg}"
+      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP:-${host_name}}:$((port+i))" >> "${haproxy_cfg}"
     done
 
     mv "${haproxy_cfg}" /etc/srv/kubernetes
 
     # Create HAProxy configuration
-    local haproxy_spec="/tmp/haproxy.manifest"
+    local -r haproxy_spec="/tmp/haproxy.manifest"
     
     cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.manifest" "${haproxy_spec}"
 
