@@ -35,7 +35,7 @@
         "env": [
           {
             "name": "IGNITE_ETCD_OPTS",
-            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Xms512m -Djava.net.preferIPv4Stack=true -DIGNITE_JMX_PORT={{ jmxport }} -DIGNITE_JETTY_PORT={{ restport }} -server -Xms2g -XX:+AlwaysPreTouch -XX:+UseG1GC -XX:+ScavengeBeforeFullGC -XX:+DisableExplicitGC -XX:+UnlockCommercialFeatures -XX:+FlightRecorder"
+            "value": "-Djava.util.logging.config.file=/etc/srv/kubernetes/java.util.logging.properties -Djava.net.preferIPv4Stack=true -DIGNITE_JMX_PORT={{ jmxport }} -DIGNITE_JETTY_PORT={{ restport }} -server -Xms2g -XX:+AlwaysPreTouch -XX:+UseG1GC -XX:+ScavengeBeforeFullGC -XX:+DisableExplicitGC"
           }
         ],
         "ports": [
