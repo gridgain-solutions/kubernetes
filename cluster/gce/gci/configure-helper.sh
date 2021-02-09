@@ -1718,8 +1718,6 @@ function prepare-ignite-etcd-manifest {
       suffix=""
     fi
 
-    # Create separate POD specification for every Ignite node.
-    local temp_pod_spec="/tmp/ignite-etcd${suffix}.manifest"
     local clientport=$((port + i - is_single))
     local comport=$((47100 + i - is_single))
     local discoport=$((47500 + i - is_single))
@@ -1727,74 +1725,102 @@ function prepare-ignite-etcd-manifest {
     local thinclientport=$((10800 + i - is_single))
     local restport=$((8080 + i - is_single))
 
-    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
-
-    sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *jmxport *}}@${jmxport}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_pod_spec}"
-    sed -i -e "s@{{ *restport *}}@${restport}@g" "${temp_pod_spec}"
-
-    if [[ -n "${ETCD_IMAGE:-}" ]]; then
-      sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_pod_spec}"
-    else
-      sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
-    fi
-
-    if [[ -n "${ETCD_DOCKER_REPOSITORY:-}" ]]; then
-      sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@${ETCD_DOCKER_REPOSITORY}@g" "${temp_pod_spec}"
-    else
-      sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
-    fi
-
-    sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_pod_spec}"
-
-    mv "${temp_pod_spec}" /etc/kubernetes/manifests
-
-    # Create separate configuration for every Ignite node
-    local temp_ignite_cfg="/tmp/ignite-etcd${suffix}.xml"
-
-    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
-
-    sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_ignite_cfg}"
-    sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_ignite_cfg}"
-    sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_ignite_cfg}"
-    sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_ignite_cfg}"
-
-    mv "${temp_ignite_cfg}" /etc/srv/kubernetes
+    prepare-ignite-etcd-pod ${suffix} ${cpulimit} ${clientport} ${comport} ${discoport} ${jmxport} ${thinclientport} ${restport} "false"
   done
 
   # Logging configuration is the same for every Ignite node
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/java.util.logging.properties" /etc/srv/kubernetes
 
-  # Create HAProxy pod for load balancing
   if [[ ${is_single} -eq 0 ]]; then
-    # Create HAProxy configuration
-    local -r haproxy_cfg="/tmp/haproxy.cfg"
-    local -r host_name=${ETCD_HOSTNAME:-$(hostname -s)}
-    
-    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.cfg" "${haproxy_cfg}"
-
-    sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_cfg}"
-
-    for i in $(seq ${IGNITE_STORAGE_SIZE}); do
-      echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP:-${host_name}}:$((port+i))" >> "${haproxy_cfg}"
-    done
-
-    mv "${haproxy_cfg}" /etc/srv/kubernetes
-
-    # Create HAProxy configuration
-    local -r haproxy_spec="/tmp/haproxy.manifest"
-    
-    cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.manifest" "${haproxy_spec}"
-
-    sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_spec}"
-
-    mv "${haproxy_spec}" /etc/kubernetes/manifests
+    if [[ "${IGNITE_HAPROXY:-}" == "true" ]]; then
+      prepare-ignite-haproxy ${port}
+    else
+      prepare-ignite-etcd-pod "" ${cpulimit} ${port} 47100 47500 49112 10800 8080 "true"
+    fi
   fi
+}
+
+# Create separate POD specification for every Ignite node.
+function prepare-ignite-etcd-pod {
+  local -r suffix=$1
+  local -r cpulimit=$2
+  local -r clientport=$3
+  local -r comport=$4
+  local -r discoport=$5
+  local -r jmxport=$6
+  local -r thinclientport=$7
+  local -r restport=$8
+  local -r clientMode=$9
+
+  local -r temp_pod_spec="/tmp/ignite-etcd${suffix}.manifest"
+
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
+
+  sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *jmxport *}}@${jmxport}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *restport *}}@${restport}@g" "${temp_pod_spec}"
+
+  if [[ -n "${ETCD_IMAGE:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_pod_spec}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
+  fi
+
+  if [[ -n "${ETCD_DOCKER_REPOSITORY:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@${ETCD_DOCKER_REPOSITORY}@g" "${temp_pod_spec}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_repository', '\(.*\)') *}}@\1@g" "${temp_pod_spec}"
+  fi
+
+  sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_pod_spec}"
+
+  mv "${temp_pod_spec}" /etc/kubernetes/manifests
+
+  # Create separate configuration for every Ignite node
+  local -r temp_ignite_cfg="/tmp/ignite-etcd${suffix}.xml"
+
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.xml" "${temp_ignite_cfg}"
+
+  sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_ignite_cfg}"
+  sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_ignite_cfg}"
+  sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_ignite_cfg}"
+  sed -i -e "s@{{ *thinclientport *}}@${thinclientport}@g" "${temp_ignite_cfg}"
+  sed -i -e "s@{{ *clientMode *}}@${clientMode}@g" "${temp_ignite_cfg}"
+
+  mv "${temp_ignite_cfg}" /etc/srv/kubernetes
+}
+
+# Create HAProxy pod for load balancing
+function prepare-ignite-haproxy {
+  local -r port=$1
+
+  # Create HAProxy configuration
+  local -r haproxy_cfg="/tmp/haproxy.cfg"
+  local -r host_name=${ETCD_HOSTNAME:-$(hostname -s)}
+  
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.cfg" "${haproxy_cfg}"
+
+  sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_cfg}"
+
+  for i in $(seq ${IGNITE_STORAGE_SIZE}); do
+    echo "    server ignite_etcd_${i} ${MASTER_INTERNAL_IP:-${host_name}}:$((port+i))" >> "${haproxy_cfg}"
+  done
+
+  mv "${haproxy_cfg}" /etc/srv/kubernetes
+
+  # Create HAProxy configuration
+  local -r haproxy_spec="/tmp/haproxy.manifest"
+  
+  cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/haproxy.manifest" "${haproxy_spec}"
+
+  sed -i -e "s@{{ *port *}}@${port}@g" "${haproxy_spec}"
+
+  mv "${haproxy_spec}" /etc/kubernetes/manifests
 }
 
 # Starts etcd server pod (and etcd-events pod if needed).

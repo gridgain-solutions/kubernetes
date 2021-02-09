@@ -390,8 +390,13 @@ KUBE_UP_AUTOMATIC_CLEANUP=${KUBE_UP_AUTOMATIC_CLEANUP:-false}
 # Storage backend. 'etcd2' supported, 'etcd3' experimental.
 STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
-# If set to a positive number Ignite cluster of the specified size should be used as etcd3-compatible storage backend.
+# Ignite cluster of the specified size should be used as etcd3-compatible storage backend if IGNITE_STORAGE_SIZE
+# is set to a positive number.
 IGNITE_STORAGE_SIZE=${IGNITE_STORAGE_SIZE:-}
+
+# Put haproxy (http://www.haproxy.org/) before Ignite cluster if IGNITE_HAPROXY is "true" and IGNITE_STORAGE_SIZE 
+# is greater than 1.
+IGNITE_HAPROXY=${IGNITE_HAPROXY:-}
 
 # Networking plugin specific settings.
 NETWORK_PROVIDER="${NETWORK_PROVIDER:-kubenet}" # none, kubenet

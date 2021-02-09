@@ -429,8 +429,13 @@ TEST_CLUSTER=${TEST_CLUSTER:-true}
 # Storage backend. 'etcd2' and 'etcd3' are supported.
 STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
-# If set to a positive number Ignite cluster of the specified size should be used as etcd3-compatible storage backend.
+# Ignite cluster of the specified size should be used as etcd3-compatible storage backend if IGNITE_STORAGE_SIZE
+# is set to a positive number.
 IGNITE_STORAGE_SIZE=${IGNITE_STORAGE_SIZE:-}
+
+# Put haproxy (http://www.haproxy.org/) before Ignite cluster if IGNITE_HAPROXY is "true" and IGNITE_STORAGE_SIZE 
+# is greater than 1.
+IGNITE_HAPROXY=${IGNITE_HAPROXY:-}
 
 # Storage media type: application/json and application/vnd.kubernetes.protobuf are supported.
 STORAGE_MEDIA_TYPE=${STORAGE_MEDIA_TYPE:-}
