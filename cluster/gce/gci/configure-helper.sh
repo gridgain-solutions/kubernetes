@@ -1725,7 +1725,7 @@ function prepare-ignite-etcd-manifest {
     local thinclientport=$((10800 + i - is_single))
     local restport=$((8080 + i - is_single))
 
-    prepare-ignite-etcd-pod ${suffix} ${cpulimit} ${clientport} ${comport} ${discoport} ${jmxport} ${thinclientport} ${restport} "false"
+    prepare-ignite-etcd-pod "${suffix}" "${cpulimit}" ${clientport} ${comport} ${discoport} ${jmxport} ${thinclientport} ${restport} "false"
   done
 
   # Logging configuration is the same for every Ignite node
