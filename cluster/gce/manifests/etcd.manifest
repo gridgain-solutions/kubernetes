@@ -20,7 +20,7 @@
       "requests": {
         "cpu": {{ cpulimit }}
       },
-      "limits": {{{ force_memlimit }}{{ force_cpulimit }}}
+      "limits": {{ force_limits }}
     },
     "command": [
               "/bin/sh",
