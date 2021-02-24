@@ -1649,9 +1649,21 @@ function prepare-etcd-manifest {
   sed -i -e "s@{{ *suffix *}}@$1@g" "${temp_file}"
   sed -i -e "s@{{ *port *}}@$2@g" "${temp_file}"
   sed -i -e "s@{{ *server_port *}}@$3@g" "${temp_file}"
-  sed -i -e "s@{{ *cpulimit *}}@\"$4\"@g" "${temp_file}"
-  sed -i -e "s@{{ *force_cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT:-}\"@g" "${temp_file}"
-  sed -i -e "s@{{ *force_memlimit *}}@\"${STORAGE_FORCE_MEM_LIMIT:-}\"@g" "${temp_file}"
+
+  if [[ -n "${STORAGE_FORCE_MEM_LIMIT:-}" ]]; then
+    sed -i -e "s@{{ *force_memlimit *}}@\"memory\": \"${STORAGE_FORCE_MEM_LIMIT}\", @g" "${temp_file}"
+  else
+    sed -i -e "s@{{ *force_memlimit *}}@@g" "${temp_file}"
+  fi
+  
+  if [[ -n "${STORAGE_FORCE_CPU_LIMIT:-}" ]]; then
+    sed -i -e "s@{{ *cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT}\"@g" "${temp_file}"
+    sed -i -e "s@{{ *force_cpulimit *}}@\"cpu\": \"${STORAGE_FORCE_CPU_LIMIT}\"@g" "${temp_file}"
+  else
+    sed -i -e "s@{{ *cpulimit *}}@\"$4\"@g" "${temp_file}"
+    sed -i -e "s@{{ *force_cpulimit *}}@@g" "${temp_file}"
+  fi
+
   sed -i -e "s@{{ *hostname *}}@$host_name@g" "${temp_file}"
   sed -i -e "s@{{ *host_ip *}}@$host_ip@g" "${temp_file}"
   sed -i -e "s@{{ *etcd_cluster *}}@$etcd_cluster@g" "${temp_file}"
@@ -1759,9 +1771,21 @@ function prepare-ignite-etcd-pod {
   cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/ignite-etcd.manifest" "${temp_pod_spec}"
 
   sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
-  sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
-  sed -i -e "s@{{ *force_cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT:-}\"@g" "${temp_file}"
-  sed -i -e "s@{{ *force_memlimit *}}@\"${STORAGE_FORCE_MEM_LIMIT:-}\"@g" "${temp_file}"
+  
+  if [[ -n "${STORAGE_FORCE_MEM_LIMIT:-}" ]]; then
+    sed -i -e "s@{{ *force_memlimit *}}@\"memory\": \"${STORAGE_FORCE_MEM_LIMIT}\", @g" "${temp_pod_spec}"
+  else
+    sed -i -e "s@{{ *force_memlimit *}}@@g" "${temp_pod_spec}"
+  fi
+  
+  if [[ -n "${STORAGE_FORCE_CPU_LIMIT:-}" ]]; then
+    sed -i -e "s@{{ *cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT}\"@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *force_cpulimit *}}@\"cpu\": \"${STORAGE_FORCE_CPU_LIMIT}\"@g" "${temp_pod_spec}"
+  else
+    sed -i -e "s@{{ *cpulimit *}}@\"$4\"@g" "${temp_pod_spec}"
+    sed -i -e "s@{{ *force_cpulimit *}}@@g" "${temp_pod_spec}"
+  fi
+
   sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
   sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
   sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_pod_spec}"
