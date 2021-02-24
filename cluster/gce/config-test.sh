@@ -429,6 +429,12 @@ TEST_CLUSTER=${TEST_CLUSTER:-true}
 # Storage backend. 'etcd2' and 'etcd3' are supported.
 STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
+# Optional: enforce storage container's CPU limit
+STORAGE_FORCE_CPU_LIMIT=${STORAGE_FORCE_CPU_LIMIT:-}
+
+# Optional: enforce storage container's memory limit
+STORAGE_FORCE_MEM_LIMIT=${STORAGE_FORCE_MEM_LIMIT:-}
+
 # Ignite cluster of the specified size should be used as etcd3-compatible storage backend if IGNITE_STORAGE_SIZE
 # is set to a positive number.
 IGNITE_STORAGE_SIZE=${IGNITE_STORAGE_SIZE:-}

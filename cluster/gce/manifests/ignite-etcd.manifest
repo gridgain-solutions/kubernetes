@@ -23,6 +23,10 @@
         "resources": {
           "requests": {
             "cpu": {{ cpulimit }}
+          },
+          "limits": {
+            "memory": {{ force_memlimit }},
+            "cpu": {{ force_cpulimit }}
           }
         },
         "command": [

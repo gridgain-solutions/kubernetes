@@ -1650,6 +1650,8 @@ function prepare-etcd-manifest {
   sed -i -e "s@{{ *port *}}@$2@g" "${temp_file}"
   sed -i -e "s@{{ *server_port *}}@$3@g" "${temp_file}"
   sed -i -e "s@{{ *cpulimit *}}@\"$4\"@g" "${temp_file}"
+  sed -i -e "s@{{ *force_cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT:-}\"@g" "${temp_file}"
+  sed -i -e "s@{{ *force_memlimit *}}@\"${STORAGE_FORCE_MEM_LIMIT:-}\"@g" "${temp_file}"
   sed -i -e "s@{{ *hostname *}}@$host_name@g" "${temp_file}"
   sed -i -e "s@{{ *host_ip *}}@$host_ip@g" "${temp_file}"
   sed -i -e "s@{{ *etcd_cluster *}}@$etcd_cluster@g" "${temp_file}"
@@ -1758,6 +1760,8 @@ function prepare-ignite-etcd-pod {
 
   sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
   sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_pod_spec}"
+  sed -i -e "s@{{ *force_cpulimit *}}@\"${STORAGE_FORCE_CPU_LIMIT:-}\"@g" "${temp_file}"
+  sed -i -e "s@{{ *force_memlimit *}}@\"${STORAGE_FORCE_MEM_LIMIT:-}\"@g" "${temp_file}"
   sed -i -e "s@{{ *port *}}@${clientport}@g" "${temp_pod_spec}"
   sed -i -e "s@{{ *comport *}}@${comport}@g" "${temp_pod_spec}"
   sed -i -e "s@{{ *discoport *}}@${discoport}@g" "${temp_pod_spec}"
