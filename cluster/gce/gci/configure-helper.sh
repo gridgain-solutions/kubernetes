@@ -1650,8 +1650,6 @@ function prepare-etcd-manifest {
   sed -i -e "s@{{ *port *}}@$2@g" "${temp_file}"
   sed -i -e "s@{{ *server_port *}}@$3@g" "${temp_file}"
 
-  local force_cpu_limit
-  local force_mem_limit
   local force_limits=""
 
   if [[ -n "${STORAGE_FORCE_MEM_LIMIT:-}" ]]; then
@@ -1665,7 +1663,7 @@ function prepare-etcd-manifest {
     fi
     force_limits+="\"cpu\": \"${STORAGE_FORCE_CPU_LIMIT}\""
   else
-    sed -i -e "s@{{ *cpulimit *}}@\"${cpulimit}\"@g" "${temp_file}"
+    sed -i -e "s@{{ *cpulimit *}}@\"$4\"@g" "${temp_file}"
   fi
 
   sed -i -e "s@{{ *force_limits *}}@{${force_limits}}@g" "${temp_file}"
@@ -1778,8 +1776,6 @@ function prepare-ignite-etcd-pod {
 
   sed -i -e "s@{{ *suffix *}}@${suffix}@g" "${temp_pod_spec}"
   
-  local force_cpu_limit
-  local force_mem_limit
   local force_limits=""
 
   if [[ -n "${STORAGE_FORCE_MEM_LIMIT:-}" ]]; then
